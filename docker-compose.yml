@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  deall-test-db:
+      image: postgres
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=pgadmin
+        - POSTGRES_DB=deall-be-test
+      ports:
+        - 5432:5432
+      restart: always
+      volumes:
+        - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      networks:
+        - deall_network
+
+  deall-test-app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: deall-test-app
+    working_dir: /app
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=pgadmin
+      - DB_HOST=deall-test-db
+      - DB_PORT=5432
+      - DB_NAME=deall-be-test
+    restart: on-failure
+    ports:
+      - 8080:8080
+    depends_on:
+      - deall-test-db
+    networks:
+      - deall_network
+      
+networks:
+  deall_network:
+    name: deall_network
+    driver: bridge
